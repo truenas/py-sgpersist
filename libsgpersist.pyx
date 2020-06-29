@@ -101,14 +101,20 @@ cdef class SCSIDevice(object):
                 self.verbose,
             )
 
-        if res != 0:
+        if res == -1:
             if action == PRInActions.READ_KEYS.value:
-                raise RuntimeError('Failed to read keys for device {self.device}')
+                raise RuntimeError('Failed to read keys.')
             elif action == PRInActions.READ_RESERVATION.value:
-                raise RuntimeError('Failed to read reservation for device {self.device}')
+                raise RuntimeError('Failed to read reservation.')
             else:
                 # should never get here
                 raise RuntimeError('Unknown error')
+        elif res == 6:
+            # UNIT ATTENTION SENSE
+            # Doesn't necessarily mean keys were preempted, but 6 is
+            # always the returned int when a preemption occurs so
+            # treat it this way always
+            raise RuntimeError('Registration Preempted')
 
         with nogil:
             pr_gen = sg_unaligned.sg_get_unaligned_be32(self.pr_buff + 0)
@@ -125,7 +131,7 @@ cdef class SCSIDevice(object):
             'generation': pr_gen,
             'entries': entries,
         }
-        
+
     def read_keys(self):
         """
         Read the registered keys on the disk (if any).
@@ -194,15 +200,21 @@ cdef class SCSIDevice(object):
                 self.verbose,
             )
 
-        if res != 0:
+        if res == -1:
             if action == PROutActions.REGISTER_KEY.value:
-                raise RuntimeError(f'Failed to register key on {self.device}.')
+                raise RuntimeError('Failed to register key.')
             if action == PROutActions.REGISTER_IGNORE_KEY.value:
-                raise RuntimeError(f'Failed to register and ignore existing key on {self.device}.')
+                raise RuntimeError('Failed to register and ignore existing key.')
             if action == PROutActions.RESERVE_KEY.value:
-                raise RuntimeError(f'Failed to reserve {self.device}.')
+                raise RuntimeError('Failed to place reservation.')
             if action == PROutActions.PREEMPT_KEY.value:
-                raise RuntimeError(f'Failed to preempt key on {self.device}.')
+                raise RuntimeError('Failed to preempt key.')
+        elif res == 6:
+            # UNIT ATTENTION SENSE
+            # Doesn't necessarily mean keys were preempted, but 6 is
+            # always the returned int when a preemption occurs so
+            # treat it this way always
+            raise RuntimeError('Registration Preempted')
 
     def update_key(self, crkey, nrkey):
         """
