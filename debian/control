@@ -3,6 +3,7 @@ Maintainer: Caleb <yocalebo@gmail.com>
 Section: python
 Priority: optional
 Build-Depends: debhelper (>= 12),
+ dh-python,
  python3-setuptools,
  python3-all,
  cython3,
