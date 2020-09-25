@@ -12,7 +12,7 @@ extensions = [
 
 setup(
     name='libsgpersist',
-    version='0.1',
+    version='0.0.1',
     setup_requires=[
         'setuptools>=45.0',
         'Cython',
