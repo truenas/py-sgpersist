@@ -5,7 +5,7 @@ Priority: optional
 Build-Depends: debhelper (>= 12),
  dh-python,
  python3-setuptools,
- python3-all,
+ python3-dev,
  cython3,
  libsgutils2-dev
 Standards-Version: 4.3.0
